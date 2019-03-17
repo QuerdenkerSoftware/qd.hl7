@@ -12,7 +12,7 @@ namespace QD.HL7.Core.Tests {
 
             var value = terser.Get("DG1-3-3");
 
-            Assert.AreEqual("OPS", value);
+            Assert.AreEqual("OPS2", value);
         }
 
 
