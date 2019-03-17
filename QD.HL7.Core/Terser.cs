@@ -9,10 +9,8 @@ namespace QD.HL7.Core {
             m_hl7Message = hl7Message;
         }
 
-        private void Set(string value, string segmentName, params int[] indices) {
-            if (!SegmentExists(segmentName)) AddSegment(segmentName);
-
-            var segment = GetSegment(segmentName);
+        private void Set(string value, string segmentName, int repetition, params int[] indices) {
+            var segment = GetOrAddSegment(segmentName, repetition, true);
 
             if (indices.Length == 1) {
                 segment.Value = value;
@@ -32,19 +30,23 @@ namespace QD.HL7.Core {
         }
 
         public void Set(string value, TerserExpression terserExpression) {
-            Set(value, terserExpression.GetSegmentName(), terserExpression.GetIndices().ToArray());
+            Set(value, terserExpression.GetSegmentName(),
+                terserExpression.IsRepetition() ? terserExpression.GetRepetition() : 1,
+                terserExpression.GetIndices().ToArray());
         }
 
 
         public string Get(TerserExpression terserExpression) {
-            return Get<string>(terserExpression.GetSegmentName(), terserExpression.GetIndices().ToArray());
+            return Get<string>(terserExpression.GetSegmentName(),
+                terserExpression.IsRepetition() ? terserExpression.GetRepetition() : 1,
+                terserExpression.GetIndices().ToArray());
         }
 
-        private T Get<T>(string segmentName, params int[] indices) {
-            if (!SegmentExists(segmentName)) return default(T);
-
-            var segment = GetSegment(segmentName);
-
+        private T Get<T>(string segmentName, int repetition, params int[] indices) {
+            var segment = GetOrAddSegment(segmentName, repetition, false);
+            if (segment == null) {
+                return default(T);
+            }
             var field = segment.Fields[indices[0] - 1];
             if (field == null) return default(T);
 
@@ -60,22 +62,35 @@ namespace QD.HL7.Core {
         }
 
         public T Get<T>(TerserExpression terserExpression) {
-            return Get<T>(terserExpression.GetSegmentName(), terserExpression.GetIndices().ToArray());
+            return Get<T>(terserExpression.GetSegmentName(),
+                terserExpression.IsRepetition() ? terserExpression.GetRepetition() : 1,
+                terserExpression.GetIndices().ToArray());
         }
 
-        private bool SegmentExists(string segmentName) {
+        private bool SegmentExists(string segmentName, int repetition) {
             return m_hl7Message?.Segments != null && m_hl7Message.Segments.Any() &&
                    m_hl7Message.Segments.Exists(
-                       segment => segment.Name.ToLowerInvariant().Equals(segmentName.ToLower()));
+                       segment => segment.Name.ToLowerInvariant().Equals(segmentName.ToLower()) && segment.Repetition == repetition);
         }
 
-        private void AddSegment(string segmentName) {
-            m_hl7Message.Segments.Add(new Segment {Name = segmentName});
+        private void AddSegment(string segmentName, int repetition) {
+            m_hl7Message.Segments.Add(new Segment {Name = segmentName, Repetition = repetition == -1 ? 1 : repetition});
         }
 
-        private Segment GetSegment(string segmentName) {
+        private Segment GetOrAddSegment(string segmentName, int repetition, bool addIfnotExists) {
+            if (!SegmentExists(segmentName, repetition)) {
+                if (addIfnotExists) {
+                    AddSegment(segmentName, repetition);
+                }
+                else {
+                    return null;
+                }
+                
+            }
+
+
             return m_hl7Message.Segments.First(segment =>
-                segment.Name.ToLowerInvariant().Equals(segmentName.ToLower()));
+                segment.Name.ToLowerInvariant().Equals(segmentName.ToLower()) && segment.Repetition == repetition);
         }
     }
 }

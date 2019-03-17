@@ -19,7 +19,15 @@ namespace QD.HL7.Core {
         }
 
         private static void ParseSegment(string segmentLine, HL7Message hl7Message) {
-            var segment = new Segment {Name = segmentLine.Substring(0, 3), Value = segmentLine};
+            var segmentName = segmentLine.Substring(0, 3);
+            var segment = new Segment {Name = segmentName, Value = segmentLine};
+            if (hl7Message.Segments.Exists(segment1 => string.Equals(segment1.Name, segmentName, StringComparison.InvariantCultureIgnoreCase))) {
+                var lastRepetition = hl7Message.Segments.Where(segment1 => string.Equals(segment1.Name, segmentName, StringComparison.InvariantCultureIgnoreCase)).Max(segment1 => segment1.Repetition);
+                segment.Repetition = lastRepetition + 1;
+            }
+            else {
+                segment.Repetition = 1;
+            }
             hl7Message.Segments.Add(segment);
 
             var fieldStrings = segmentLine.Split(FieldDelimiters[0]).ToList();

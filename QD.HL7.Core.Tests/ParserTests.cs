@@ -24,9 +24,6 @@ namespace QD.HL7.Core.Tests {
             var terser = new Terser(msg);
 
             terser.Set("OPS2", "DG1-3-3");
-
-
-
         }
     }
 }

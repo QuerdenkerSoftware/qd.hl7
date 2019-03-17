@@ -65,6 +65,7 @@ namespace QD.HL7.Core.Tests {
         ///EVN|P01|20190315102832
         ///PID|||1232
         ///PV1||I|||||||||||||||||12345678
+        ///DG1|1|OPS|123.74^^OPS2|descv|20190315102955|A
         ///DG1|1|OPS|123.73^^OPS|descv|20190315102954|A.
         /// </summary>
         internal static string BARP01 {
