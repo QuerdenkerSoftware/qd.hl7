@@ -15,6 +15,14 @@ namespace QD.HL7.Core.Tests {
             Assert.AreEqual("OPS2", value);
         }
 
+        [TestMethod]
+        public void ReadEmptyMessageTest() {
+            var parser = new Parser();
+            var msg = parser.Parse(string.Empty);
+
+            Assert.IsInstanceOfType(msg, typeof(HL7Message));
+        }
+
 
         [TestMethod]
         public void WriteTest() {

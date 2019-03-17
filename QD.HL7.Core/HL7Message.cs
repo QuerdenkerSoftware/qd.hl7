@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace QD.HL7.Core {
     public class HL7Message {
@@ -21,7 +22,12 @@ namespace QD.HL7.Core {
         }
 
         public override string ToString() {
-            return base.ToString();
+            var sb = new StringBuilder();
+
+            foreach (var segment in Segments) {
+                sb.AppendLine(segment.ToString());
+            }
+            return sb.ToString();
         }
     }
 }

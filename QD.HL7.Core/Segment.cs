@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace QD.HL7.Core {
     public class Segment {
@@ -9,6 +11,22 @@ namespace QD.HL7.Core {
 
         public Segment() {
             Fields = new List<Field>();
+        }
+
+        public override string ToString() {
+            var sb = new StringBuilder();
+
+            sb.Append(Name);
+
+            foreach (var field in Fields) {
+                sb.Append("|" + field);
+            }
+
+            if (Name.Equals("MSH", StringComparison.InvariantCultureIgnoreCase)) {
+                sb = sb.Replace("||", "|");
+            }
+
+            return sb.ToString();
         }
     }
 }
