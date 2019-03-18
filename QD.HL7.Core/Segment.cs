@@ -23,7 +23,7 @@ namespace QD.HL7.Core {
             }
 
             if (Name.Equals("MSH", StringComparison.InvariantCultureIgnoreCase)) {
-                sb = sb.Replace("||", "|");
+                sb = sb.Replace("MSH||", "MSH|");
             }
 
             return sb.ToString();
