@@ -64,6 +64,7 @@
       <DependentUpon>Resource1.resx</DependentUpon>
     </Compile>
     <Compile Include="TerserExpressionTests.cs" />
+    <Compile Include="TerserTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

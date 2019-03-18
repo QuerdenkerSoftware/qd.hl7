@@ -13,18 +13,42 @@ namespace QD.HL7.Core {
             var segment = GetOrAddSegment(segmentName, repetition, true);
 
             if (indices.Length == 1) {
-                segment.Value = value;
-                if (indices[0] - 1 <= segment.Fields.Count) segment.Fields[indices[0] - 1].Value = value;
+                var index = indices[0] - 1;
+                if (index < segment.Fields.Count)
+                    segment.Fields[index].Value = value;
+                else
+                    for (var i = 0; i <= index; i++) {
+                        if (segment.Fields.Count == i) segment.Fields.Add(new Field {Value = string.Empty});
+
+                        var field = segment.Fields[i];
+                        if (field != null && i == index) field.Value = value;
+                    }
             }
             else {
-                var field = segment.Fields[indices[0] - 1];
+                var index = indices[0] - 1;
                 var subFieldIndex = indices[1] - 1;
+                if (index < segment.Fields.Count) {
+                    var field = segment.Fields[index];
+                    for (var i = 0; i <= subFieldIndex; i++) {
 
-                for (var i = 0; i <= subFieldIndex; i++) {
-                    var subField = field[i];
-                    if (subField == null) field.Add(string.Empty);
+                        if (field.Count <= subFieldIndex) field.Add(string.Empty);
 
-                    if (i == subFieldIndex) field.Value = value;
+                        if (i == subFieldIndex) field[subFieldIndex] = value;
+                    }
+                }
+                else {
+                    for (var i = 0; i <= index; i++) {
+                        if (segment.Fields.Count == i) segment.Fields.Add(new Field {Value = string.Empty});
+
+                        var field = segment.Fields[i];
+                        if (field != null && i == index)
+                            for (var j = 0; j <= subFieldIndex; j++) {
+
+                                if (field.Count <= subFieldIndex) field.Add(string.Empty);
+
+                                if (j == subFieldIndex) field[subFieldIndex] = value;
+                            }
+                    }
                 }
             }
         }
@@ -44,9 +68,7 @@ namespace QD.HL7.Core {
 
         private T Get<T>(string segmentName, int repetition, params int[] indices) {
             var segment = GetOrAddSegment(segmentName, repetition, false);
-            if (segment == null) {
-                return default(T);
-            }
+            if (segment == null) return default(T);
             var field = segment.Fields[indices[0] - 1];
             if (field == null) return default(T);
 
@@ -70,7 +92,8 @@ namespace QD.HL7.Core {
         private bool SegmentExists(string segmentName, int repetition) {
             return m_hl7Message?.Segments != null && m_hl7Message.Segments.Any() &&
                    m_hl7Message.Segments.Exists(
-                       segment => segment.Name.ToLowerInvariant().Equals(segmentName.ToLower()) && segment.Repetition == repetition);
+                       segment => segment.Name.ToLowerInvariant().Equals(segmentName.ToLower()) &&
+                                  segment.Repetition == repetition);
         }
 
         private void AddSegment(string segmentName, int repetition) {
@@ -79,13 +102,10 @@ namespace QD.HL7.Core {
 
         private Segment GetOrAddSegment(string segmentName, int repetition, bool addIfnotExists) {
             if (!SegmentExists(segmentName, repetition)) {
-                if (addIfnotExists) {
+                if (addIfnotExists)
                     AddSegment(segmentName, repetition);
-                }
-                else {
+                else
                     return null;
-                }
-                
             }
 
 
